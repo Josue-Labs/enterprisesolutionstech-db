@@ -1,0 +1,31 @@
+services:
+  db_core:
+    image: postgres:15-alpine
+    container_name: factoria_db_core
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin_password
+      POSTGRES_DB: factoria_proyectos
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d factoria_proyectos"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  flyway_migrator:
+    image: flyway/flyway:9-alpine
+    container_name: factoria_db_migrator
+    depends_on:
+      db_core:
+        condition: service_healthy 
+    command: -url=jdbc:postgresql://factoria_db_core:5432/factoria_proyectos -user=postgres -password=admin_password migrate
+    volumes:
+      - ./migraciones:/flyway/sql
+    
+volumes:
+  pgdata:
