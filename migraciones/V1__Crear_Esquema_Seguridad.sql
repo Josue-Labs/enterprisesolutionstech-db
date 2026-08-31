@@ -1,5 +1,14 @@
 CREATE SCHEMA IF NOT EXISTS seguridad;
 
+CREATE TABLE seguridad.empresas (
+    empresa_id SERIAL PRIMARY KEY,
+    codigo_empresa VARCHAR(50) UNIQUE NOT NULL,
+    nombre_empresa VARCHAR(150) NOT NULL,
+    indicador_principal BOOLEAN DEFAULT FALSE,
+    activo BOOLEAN DEFAULT TRUE,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE seguridad.usuarios (
     usuario_id SERIAL PRIMARY KEY,
     codigo_usuario VARCHAR(50) UNIQUE NOT NULL,
@@ -14,7 +23,7 @@ CREATE TABLE seguridad.usuarios (
     indicador_olvido_contrasena BOOLEAN DEFAULT FALSE,
     indicador_contrasena_expirada BOOLEAN DEFAULT FALSE,
     indicador_contrasena_temporal BOOLEAN DEFAULT FALSE,
-    empresa_id INT,
+    empresa_id INT REFERENCES seguridad.empresas(empresa_id),
     activo BOOLEAN DEFAULT TRUE,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -54,27 +63,4 @@ CREATE TABLE seguridad.usuario_perfil (
     usuario_id INT REFERENCES seguridad.usuarios(usuario_id),
     perfil_id INT REFERENCES seguridad.perfiles(perfil_id),
     PRIMARY KEY (usuario_id, perfil_id)
-);
-
-
-CREATE SCHEMA IF NOT EXISTS taximetro;
-
-CREATE TABLE taximetro.tarifas (
-    tarifa_id SERIAL PRIMARY KEY,
-    estado_vehiculo VARCHAR(20) UNIQUE NOT NULL,
-    costo_por_segundo DECIMAL(10,4) NOT NULL,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE taximetro.viajes (
-    viaje_id SERIAL PRIMARY KEY,
-    usuario_id INT REFERENCES seguridad.usuarios(usuario_id),
-    fecha_inicio TIMESTAMP NOT NULL,
-    fecha_fin TIMESTAMP,
-    tiempo_total_segundos DECIMAL(10,2),
-    tiempo_parado_segundos DECIMAL(10,2),
-    tiempo_movimiento_segundos DECIMAL(10,2),
-    costo_total DECIMAL(10,2),
-    estado_viaje VARCHAR(20) DEFAULT 'FINALIZADO',
-    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
