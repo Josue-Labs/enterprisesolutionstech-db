@@ -2,35 +2,20 @@ name: Deploy Database to EC2
 
 on:
   push:
-    branches:
-      - dev
+    branches: [main]
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
-    environment: DB_CORE
-    
+    runs-on: [self-hosted, Linux, X64]
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Copy Files to EC2
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "docker-compose.yml,migraciones/"
-          target: "~/enterprisesolutionstech-db"
-          overwrite: true
-
-      - name: Execute Docker Compose on EC2
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            cd ~/enterprisesolutionstech-db
-            docker compose down
-            docker compose up -d
+      - name: Publicar sin bajar la base
+        run: |
+          dest=/home/ubuntu/enterprisesolutionstech-db
+          mkdir -p "$dest"
+          rsync -a --exclude .env --exclude .git ./ "$dest/"
+          cd "$dest"
+          docker compose up -d db_core
+          docker compose up -d --no-deps --force-recreate flyway_migrator
+          docker compose logs --tail 50 flyway_migrator

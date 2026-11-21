@@ -1,7 +1,9 @@
+name: enterprisesolutionstech-db
+
 services:
   db_core:
     image: postgres:15-alpine
-    container_name: factoria_db_core
+    container_name: josue_db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -20,7 +22,7 @@ services:
 
   flyway_migrator:
     image: flyway/flyway:9-alpine
-    container_name: factoria_db_migrator
+    container_name: josue_db_migrator
     depends_on:
       db_core:
         condition: service_healthy
